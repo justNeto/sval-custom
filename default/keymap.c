@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "svalboard.h"
 #include "vial.h"
 #include "dynamic_keymap.h"
+#include "pointing_device.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -101,8 +102,7 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
     return state;
 }
 
-layer_state_t layer_state_set_user(layer_state_t state)
-{
+layer_state_t layer_state_set_user(layer_state_t state) {
     for (int i = 0; i < RGBLIGHT_LAYERS; ++i) {
         rgblight_set_layer_state(i, layer_state_cmp(state, i));
     }
@@ -113,8 +113,7 @@ layer_state_t layer_state_set_user(layer_state_t state)
 // in any header declares it externally, so keymap.c needs its own extern.
 extern tap_dance_action_t tap_dance_actions[];
 
-void keyboard_post_init_user(void)
-{
+void keyboard_post_init_user(void) {
     rgblight_layers = sval_rgb_layers;
 
     // As vial owns tap_dance_actions[], need to initialize it as so
@@ -131,23 +130,17 @@ void keyboard_post_init_user(void)
 // Keep gui layer switcher locked until ESC is pressed
 static bool gui_layer_locked = false;
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record)
-{
-
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Do not allow mouse if navnum layer is on
-    if (IS_LAYER_ON(NAVNUM))
-    {
-        set_auto_mouse_enabled(false);
-    }
-    else
-    {
-        set_auto_mouse_enabled(true);
+    if (IS_LAYER_ON(NAVNUM)) {
+        set_auto_mouse_enable(false);
+    } else {
+        set_auto_mouse_enable(true);
     }
 
     // Escape cancels a locked GUI_LAYER instead of being sent through it:
     // swallow the Escape entirely and tear the layer/mod back down.
-    if (keycode == KC_ESCAPE && record->event.pressed && gui_layer_locked)
-    {
+    if (keycode == KC_ESCAPE && record->event.pressed && gui_layer_locked) {
         layer_off(NAVNUM);
         unregister_code(KC_LGUI);
         gui_layer_locked = false;
@@ -156,17 +149,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
     return true;
 }
 
-td_state_t cur_dance(tap_dance_state_t *state)
-{
-    if (state->count == 1)
-    {
+td_state_t cur_dance(tap_dance_state_t *state) {
+    if (state->count == 1) {
         if (state->interrupted || !state->pressed)
             return TD_SINGLE_TAP;
         else // key has not been interrupted, but the key is still held
             return TD_SINGLE_HOLD;
-    }
-    else if (state->count == 2)
-    {
+    } else if (state->count == 2) {
         // TD_DOUBLE_SINGLE_TAP is to distinguish between typing "pepper", and
         // actually wanting a double tap action when hitting 'pp'. Suggested use
         // case for this return value is when you want to send two keystrokes of the
@@ -193,12 +182,10 @@ td_state_t cur_dance(tap_dance_state_t *state)
 
 static td_tap_t hold_shift_state = {.is_press_action = true, .state = TD_NONE};
 
-void hold_shift_finished(tap_dance_state_t *state, void *user_data)
-{
+void hold_shift_finished(tap_dance_state_t *state, void *user_data) {
     hold_shift_state.state = cur_dance(state); // grab current state
 
-    switch (hold_shift_state.state)
-    {
+    switch (hold_shift_state.state) {
         case TD_SINGLE_HOLD:
             register_code(KC_LSFT);
             break;
@@ -210,10 +197,8 @@ void hold_shift_finished(tap_dance_state_t *state, void *user_data)
     }
 }
 
-void hold_shift_reset(tap_dance_state_t *state, void *user_data)
-{
-    switch (hold_shift_state.state)
-    {
+void hold_shift_reset(tap_dance_state_t *state, void *user_data) {
+    switch (hold_shift_state.state) {
         case TD_SINGLE_HOLD:
             unregister_code(KC_LSFT);
             break;
@@ -225,12 +210,10 @@ void hold_shift_reset(tap_dance_state_t *state, void *user_data)
 
 static td_tap_t gui_layer_state = {.is_press_action = true, .state = TD_NONE};
 
-void gui_layer_finished(tap_dance_state_t *state, void *user_data)
-{
+void gui_layer_finished(tap_dance_state_t *state, void *user_data) {
     gui_layer_state.state = cur_dance(state);
 
-    switch (gui_layer_state.state)
-    {
+    switch (gui_layer_state.state) {
         case TD_SINGLE_TAP:
             tap_code(KC_ESCAPE);
             break;
@@ -248,10 +231,8 @@ void gui_layer_finished(tap_dance_state_t *state, void *user_data)
     }
 }
 
-void gui_layer_reset(tap_dance_state_t *state, void *user_data)
-{
-    switch (gui_layer_state.state)
-    {
+void gui_layer_reset(tap_dance_state_t *state, void *user_data) {
+    switch (gui_layer_state.state) {
         case TD_SINGLE_HOLD:
             unregister_code(KC_LGUI);
             break;
@@ -344,7 +325,7 @@ const uint16_t PROGMEM keymaps[DYNAMIC_KEYMAP_LAYER_COUNT][MATRIX_ROWS][MATRIX_C
         /*L4*/     KC_1            , KC_F1           , KC_TRNS         , KC_F9         , KC_NO           , KC_NO           ,
 
         /*         Down             Pad             Up              Nail            Knuckle         DoubleDown*/
-        /*RT*/     KC_NO            , KC_NO         , KC_NO         , KC_BSPC       , LCTL(KC_B)    , KC_NO ,
+        /*RT*/     TD(SHIFT_CAPS)   , KC_NO         , KC_NO         , KC_BSPC       , LCTL(KC_B)    , KC_NO ,
         /*LT*/     KC_NO            , KC_ESC        , KC_TAB        , KC_DELETE     , KC_LCTL       , TO(DVORAK)
     ),
 

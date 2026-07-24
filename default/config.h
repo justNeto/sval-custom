@@ -29,3 +29,7 @@
 #define TAPPING_TERM 175
 #undef TAPPING_TERM_PER_KEY
 #define TAPPING_TERM_PER_KEY
+
+#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+// only required if not setting mouse layer elsewhere
+#define AUTO_MOUSE_DEFAULT_LAYER 15
