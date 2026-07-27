@@ -102,10 +102,38 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
     return state;
 }
 
+// Svalboard's own auto-mouse gate (keymap_support.c: mouse_mode()), not the
+// stock qmk automouse feature.
+static bool auto_mouse_saved_state     = true;
+static bool auto_mouse_override_active = false;
+
+// Read by keymap_support.c's pointing_device_task_combined_user() to drop
+// trackball movement entirely while NAVNUM is active.
+bool pointer_movement_locked = false;
+
 layer_state_t layer_state_set_user(layer_state_t state) {
     for (int i = 0; i < RGBLIGHT_LAYERS; ++i) {
         rgblight_set_layer_state(i, layer_state_cmp(state, i));
     }
+
+    pointer_movement_locked = layer_state_cmp(state, NAVNUM);
+
+    // Do not allow mouse if navnum layer is on
+    if (pointer_movement_locked) {
+        if (!auto_mouse_override_active) {
+            auto_mouse_saved_state     = global_saved_values.auto_mouse;
+            auto_mouse_override_active = true;
+        }
+        // mouse_mode()'s off branch is itself gated on auto_mouse, so clear the
+        // mouse overlay bit here first or it can never be turned back off.
+        state &= ~((layer_state_t)1 << MH_AUTO_BUTTONS_LAYER);
+        global_saved_values.auto_mouse = false;
+        mouse_mode_enabled             = false;
+    } else if (auto_mouse_override_active) {
+        global_saved_values.auto_mouse = auto_mouse_saved_state;
+        auto_mouse_override_active     = false;
+    }
+
     return state;
 }
 
@@ -131,13 +159,6 @@ void keyboard_post_init_user(void) {
 static bool gui_layer_locked = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // Do not allow mouse if navnum layer is on
-    if (IS_LAYER_ON(NAVNUM)) {
-        set_auto_mouse_enable(false);
-    } else {
-        set_auto_mouse_enable(true);
-    }
-
     // Escape cancels a locked GUI_LAYER instead of being sent through it:
     // swallow the Escape entirely and tear the layer/mod back down.
     if (keycode == KC_ESCAPE && record->event.pressed && gui_layer_locked) {
