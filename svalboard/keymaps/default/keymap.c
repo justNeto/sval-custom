@@ -68,7 +68,7 @@ td_state_t cur_dance(tap_dance_state_t *state);
 void hold_shift_finished(tap_dance_state_t *state, void *user_data);
 void hold_shift_reset(tap_dance_state_t *state, void *user_data);
 
-// GUI_LAYER: hold = LGUI + momentary layer switch, tap = TODO
+// GUI_LAYER: tap = delete ; tap and hold: momentary layer switch
 void gui_layer_finished(tap_dance_state_t *state, void *user_data);
 void gui_layer_reset(tap_dance_state_t *state, void *user_data);
 
@@ -236,10 +236,7 @@ void gui_layer_finished(tap_dance_state_t *state, void *user_data) {
 
     switch (gui_layer_state.state) {
         case TD_SINGLE_TAP:
-            tap_code(KC_ESCAPE);
-            break;
-        case TD_SINGLE_HOLD:
-            register_code(KC_LGUI);
+            tap_code(KC_DELETE);
             break;
         case TD_DOUBLE_HOLD:
             // Nav to the layer
@@ -254,9 +251,6 @@ void gui_layer_finished(tap_dance_state_t *state, void *user_data) {
 
 void gui_layer_reset(tap_dance_state_t *state, void *user_data) {
     switch (gui_layer_state.state) {
-        case TD_SINGLE_HOLD:
-            unregister_code(KC_LGUI);
-            break;
         default:
             break;
     }
@@ -279,7 +273,7 @@ const uint16_t PROGMEM keymaps[DYNAMIC_KEYMAP_LAYER_COUNT][MATRIX_ROWS][MATRIX_C
 
         /*         Down                     Pad             Up                Nail            Knuckle           DoubleDown*/
         /*RT*/     TD(SHIFT_CAPS)         , KC_ENTER        , KC_LALT       , KC_BSPC       , LCTL(KC_B)      , TG(UTILS)       ,
-        /*LT*/     LT(SYMBOLS, KC_SPACE)  , TD(GUI_LAYER)   , KC_TAB        , KC_DELETE     , KC_LCTL         , TO(DVORAK)
+        /*LT*/     LT(SYMBOLS, KC_SPACE)  , LGUI_T(KC_ESC)  , KC_TAB        , TD(GUI_LAYER) , KC_LCTL         , TO(DVORAK)
     ),
 
     [LAYERSEL] = LAYOUT(
@@ -311,9 +305,9 @@ const uint16_t PROGMEM keymaps[DYNAMIC_KEYMAP_LAYER_COUNT][MATRIX_ROWS][MATRIX_C
         /*L3*/     KC_S            , KC_W            , KC_NO           , KC_X          , TO(MBO)         , KC_NO           ,
         /*L4*/     KC_A            , KC_Z            , TG(NAVNUM)      , KC_Q          , TO(LAYERSEL)    , KC_NO           ,
 
-        /*         Down              Pad             Up                Nail            Knuckle           DoubleDown*/
-        /*RT*/     TD(SHIFT_CAPS)  , KC_ENTER        , KC_LALT         , KC_BSPC       , LCTL(KC_B)      , TG(UTILS)       ,
-        /*LT*/     LT(SYMBOLS, KC_SPACE), TD(GUI_LAYER), KC_TAB        , KC_DELETE     , KC_LCTL         , TO(DVORAK)
+        /*         Down                     Pad                 Up              Nail             Knuckle           DoubleDown*/
+        /*RT*/     TD(SHIFT_CAPS)  ,        KC_ENTER            , KC_LALT       , KC_BSPC        , LCTL(KC_B)      , TG(UTILS)       ,
+        /*LT*/     LT(SYMBOLS, KC_SPACE),   LGUI_T(KC_ESC)      , KC_TAB        , TD(GUI_LAYER)  , KC_LCTL         , TO(DVORAK)
     ),
 
     [SYMBOLS] = LAYOUT(
