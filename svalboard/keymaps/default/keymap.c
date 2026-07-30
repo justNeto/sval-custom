@@ -134,6 +134,10 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         auto_mouse_override_active     = false;
     }
 
+    if (layer_state_cmp(state, DVORAK)) {
+        unregister_code(KC_LGUI);
+    }
+
     return state;
 }
 
