@@ -145,7 +145,14 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 // in any header declares it externally, so keymap.c needs its own extern.
 extern tap_dance_action_t tap_dance_actions[];
 
+#define LEFT_CPI 1000
+#define RIGHT_CPI 1250
+
+// Keyboard post uint always runs after set_dpi_from_eeprom()
 void keyboard_post_init_user(void) {
+    pointing_device_set_cpi_on_side(true, LEFT_CPI);
+    pointing_device_set_cpi_on_side(false, RIGHT_CPI);
+
     rgblight_layers = sval_rgb_layers;
 
     // As vial owns tap_dance_actions[], need to initialize it as so
@@ -156,7 +163,12 @@ void keyboard_post_init_user(void) {
     vial_tap_dance_entry_t gui_layer_td;
     dynamic_keymap_get_tap_dance(GUI_LAYER, &gui_layer_td);
     gui_layer_td.custom_tapping_term = 200; // mod layer's term
-    dynamic_keymap_set_tap_dance(GUI_LAYER, &gui_layer_td);
+    dynamic_keymap_set_tap_dance(gui_layer, &gui_layer_td);
+
+    vial_tap_dance_entry_t hold_shift_layer_td;
+    dynamic_keymap_get_tap_dance(SHIFT_CAPS, &hold_shift_layer_td);
+    hold_shift_layer_td.custom_tapping_term = 150; // mod layer's term
+    dynamic_keymap_set_tap_dance(SHIFT_CAPS, &hold_shift_layer_td);
 }
 
 // Keep gui layer switcher locked until ESC is pressed
@@ -262,6 +274,8 @@ void gui_layer_reset(tap_dance_state_t *state, void *user_data) {
 }
 
 // clang-format off
+// R1 -> R4 : index, heart, ring and pinky
+// L1 -> L4 : index, heart, ring and pinky
 const uint16_t PROGMEM keymaps[DYNAMIC_KEYMAP_LAYER_COUNT][MATRIX_ROWS][MATRIX_COLS] = {
     [DVORAK] = LAYOUT(
         /*         Center            North           East              South           West              Double*/
@@ -316,15 +330,15 @@ const uint16_t PROGMEM keymaps[DYNAMIC_KEYMAP_LAYER_COUNT][MATRIX_ROWS][MATRIX_C
 
     [SYMBOLS] = LAYOUT(
         /*         Center                North               East              South               West              Double*/
-        /*R1*/     LSFT(KC_RBRC)       , KC_NO             , KC_EQUAL        , KC_NO             , LSFT(KC_DOT)    , KC_NO           ,
-        /*R2*/     LSFT(KC_0)          , LSFT(KC_BSLS)     , KC_NO           , LSFT(KC_MINUS)    , KC_NO           , KC_NO           ,
-        /*R3*/     KC_SLASH            , LSFT(KC_6)        , KC_NO           , LSFT(KC_3)        , KC_NO           , KC_NO           ,
-        /*R4*/     KC_SCLN             , KC_NO             , LSFT(KC_4)      , KC_NO             , KC_NO           , KC_NO           ,
+        /*R1*/     LSFT(KC_RBRC)       , KC_RBRC            , KC_EQUAL        , KC_NO             , LSFT(KC_DOT)    , KC_NO           ,
+        /*R2*/     LSFT(KC_0)          , LSFT(KC_BSLS)      , KC_NO           , LSFT(KC_MINUS)    , KC_NO           , KC_NO           ,
+        /*R3*/     KC_SLASH            , LSFT(KC_6)         , KC_NO           , LSFT(KC_3)        , KC_NO           , KC_NO           ,
+        /*R4*/     KC_SCLN             , KC_GRAVE           , LSFT(KC_4)      , KC_NO             , KC_NO           , KC_NO           ,
 
-        /*L1*/     LSFT(KC_LBRC)       , KC_NO             , LSFT(KC_COMMA)  , LSFT(KC_2)        , LSFT(KC_EQUAL)  , KC_NO           ,
-        /*L2*/     LSFT(KC_9)          , LSFT(KC_7)        , KC_NO           , LSFT(KC_5)        , KC_NO           , KC_NO           ,
-        /*L3*/     KC_BSLS             , LSFT(KC_8)        , KC_NO           , KC_MINUS          , KC_NO           , KC_NO           ,
-        /*L4*/     LSFT(KC_SCLN)       , LSFT(KC_GRAVE)    , KC_NO           , LSFT(KC_QUOTE)    , KC_0            , KC_NO           ,
+        /*L1*/     LSFT(KC_LBRC)       , KC_LBRC            , LSFT(KC_COMMA)  , LSFT(KC_2)        , LSFT(KC_EQUAL)  , KC_NO           ,
+        /*L2*/     LSFT(KC_9)          , LSFT(KC_7)         , KC_NO           , LSFT(KC_5)        , KC_NO           , KC_NO           ,
+        /*L3*/     KC_BSLS             , LSFT(KC_8)         , KC_NO           , KC_MINUS          , KC_NO           , KC_NO           ,
+        /*L4*/     LSFT(KC_SCLN)       , LSFT(KC_GRAVE)     , KC_NO           , LSFT(KC_QUOTE)    , KC_0            , KC_NO           ,
 
         /*         Down                 Pad                 Up                Nail              Knuckle         DoubleDown*/
         /*RT*/     KC_TRNS             , KC_TRNS           , KC_TRNS         , KC_TRNS          , KC_TRNS       , KC_TRNS         ,
@@ -332,19 +346,19 @@ const uint16_t PROGMEM keymaps[DYNAMIC_KEYMAP_LAYER_COUNT][MATRIX_ROWS][MATRIX_C
     ),
 
     [NAVNUM] = LAYOUT(
-        /*         Center            North           East              South           West              Double*/
-        /*R1*/     KC_5            , KC_F5           , KC_TRNS         , KC_LEFT       , KC_9            , KC_NO           ,
-        /*R2*/     KC_6            , KC_F6           , KC_NO           , KC_RIGHT      , KC_DOT          , KC_NO           ,
-        /*R3*/     KC_7            , KC_F7           , KC_NO           , KC_F11        , KC_NO           , KC_NO           ,
-        /*R4*/     KC_8            , KC_F8           , KC_NO           , KC_F12        , KC_NO           , KC_NO           ,
+        /*         Center            North              East              South           West              Double*/
+        /*R1*/     KC_LEFT          , KC_F5           , KC_TRNS         , KC_DOWN       , KC_NO             , KC_NO           ,
+        /*R2*/     KC_RIGHT         , KC_F6           , KC_NO           , KC_UP         , KC_DOT            , KC_NO           ,
+        /*R3*/     KC_NO            , KC_F7           , KC_NO           , KC_F11        , KC_NO             , KC_NO           ,
+        /*R4*/     KC_NO            , KC_F8           , KC_NO           , KC_F12        , KC_NO             , KC_NO           ,
 
-        /*L1*/     KC_4            , KC_F4           , KC_0            , KC_UP         , KC_TRNS         , KC_NO           ,
-        /*L2*/     KC_3            , KC_F3           , KC_COMMA        , KC_DOWN       , KC_NO           , KC_NO           ,
-        /*L3*/     KC_2            , KC_F2           , KC_NO           , KC_F10        , KC_NO           , KC_NO           ,
-        /*L4*/     KC_1            , KC_F1           , KC_TRNS         , KC_F9         , KC_NO           , KC_NO           ,
+        /*L1*/     KC_4            , KC_F4           , KC_5            , KC_9           , KC_TRNS            , KC_NO           ,
+        /*L2*/     KC_3            , KC_F3           , KC_COMMA        , KC_8           , KC_NO              , KC_NO           ,
+        /*L3*/     KC_2            , KC_F2           , KC_NO           , KC_7           , KC_NO              , KC_NO           ,
+        /*L4*/     KC_1            , KC_F1           , KC_TRNS         , KC_6           , KC_0               , KC_NO           ,
 
         /*         Down             Pad             Up              Nail            Knuckle         DoubleDown*/
-        /*RT*/     TD(SHIFT_CAPS)   , KC_NO         , KC_NO         , KC_BSPC       , LCTL(KC_B)    , KC_NO ,
+        /*RT*/     TD(SHIFT_CAPS)   , KC_TRNS       , KC_NO         , KC_BSPC       , LCTL(KC_B)    , KC_NO ,
         /*LT*/     KC_NO            , KC_ESC        , KC_TAB        , KC_DELETE     , KC_LCTL       , TO(DVORAK)
     ),
 
