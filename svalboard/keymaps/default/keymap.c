@@ -163,7 +163,7 @@ void keyboard_post_init_user(void) {
     vial_tap_dance_entry_t gui_layer_td;
     dynamic_keymap_get_tap_dance(GUI_LAYER, &gui_layer_td);
     gui_layer_td.custom_tapping_term = 200; // mod layer's term
-    dynamic_keymap_set_tap_dance(gui_layer, &gui_layer_td);
+    dynamic_keymap_set_tap_dance(GUI_LAYER, &gui_layer_td);
 
     vial_tap_dance_entry_t hold_shift_layer_td;
     dynamic_keymap_get_tap_dance(SHIFT_CAPS, &hold_shift_layer_td);
