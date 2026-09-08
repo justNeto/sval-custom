@@ -523,15 +523,10 @@ void ps2_mouse_moved_user(report_mouse_t *mouse_report) {
 #endif
 
 void matrix_scan_kb(void) {
-    if ((mh_timer_choices[global_saved_values.mh_timer_index] >= 0) && mouse_mode_enabled && (timer_elapsed(mh_auto_buttons_timer) > mh_timer_choices[global_saved_values.mh_timer_index]) && mouse_keys_pressed == 0) {
-        if (!tp_buttons) {
-            mouse_mode(false);
-#if defined CONSOLE_ENABLE
-            print("matrix - mh_auto_buttons: off\n");
-#endif
-        }
-    }
-
+    // Idle-timeout auto-exit removed: some OSes take longer than
+    // mh_timer_choices to register a click, kicking us out of the buttons
+    // layer mid-click. Exiting now only happens via process_record_kb
+    // (typing/bad-keycode) or an explicit TO(DVORAK) press.
     matrix_scan_user();
 }
 

@@ -30,6 +30,9 @@
 #undef TAPPING_TERM_PER_KEY
 #define TAPPING_TERM_PER_KEY
 
-#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
-// only required if not setting mouse layer elsewhere
-#define AUTO_MOUSE_DEFAULT_LAYER 15
+// Stock QMK auto-mouse (POINTING_DEVICE_AUTO_MOUSE_ENABLE) is disabled on
+// purpose: it ran alongside our own mouse_mode()/MH_AUTO_BUTTONS system
+// (keymap_support.c, enabled at the board level) and turned the same
+// buttons layer off on its own fixed ~650ms idle timer (AUTO_MOUSE_TIME),
+// independently of matrix_scan_kb's timeout and process_record_kb's
+// typing/TO(DVORAK) exits below.
